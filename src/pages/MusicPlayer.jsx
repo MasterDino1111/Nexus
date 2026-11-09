@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
+import { callFunction } from "@/lib/callFunction";
 import { useMusicPlayer } from "../contexts/MusicPlayerContext";
 import { ChevronDown, Play, Pause, SkipForward, SkipBack, Shuffle, Repeat, Heart, Share2, ListMusic, Sparkles, Loader2, Download, Crown } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -39,10 +40,10 @@ export default function MusicPlayer() {
     if (!me) return;
     const newLiked = !liked;
     setLiked(newLiked);
-    const newLikes = (currentSong.likes || 0) + (newLiked ? 1 : -1);
     try {
+      const { ok } = await callFunction("songStats", { songId: currentSong.id, action: newLiked ? "like" : "unlike" });
+      if (!ok) throw new Error("songStats failed");
       if (newLiked) {
-        await base44.entities.SongLike.create({ user_id: me.id, song_id: currentSong.id });
         await notifyLike({
           ownerId: currentSong.uploader_id,
           actor: me,
@@ -52,11 +53,7 @@ export default function MusicPlayer() {
           contentThumbnail: currentSong.cover_url,
           link: "/music",
         }).catch(() => {});
-      } else {
-        const myLikes = await base44.entities.SongLike.filter({ user_id: me.id, song_id: currentSong.id }, "-created_date", 1);
-        if (myLikes[0]) await base44.entities.SongLike.delete(myLikes[0].id);
       }
-      await base44.entities.Song.update(currentSong.id, { likes: newLikes });
     } catch {
       setLiked(!newLiked);
     }

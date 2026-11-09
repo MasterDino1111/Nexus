@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
+import { onlyPublished } from "@/lib/published";
 import { loadForYou } from "@/lib/recommendations";
 import VideoCard from "@/components/video/VideoCard";
 import ShortsCard from "@/components/video/ShortsCard";
@@ -82,7 +83,7 @@ export default function Home() {
         const page = await base44.entities.Video.filter({ category: { $ne: "shorts" } }, { sort: "-created_date", limit: 50 });
         data = page.items;
       }
-      setVideos(data);
+      setVideos(onlyPublished(data));
       if (me) {
         const mine = await base44.entities.Video.filter({ uploader_id: me.id }, "-created_date", 50);
         const now = Date.now();

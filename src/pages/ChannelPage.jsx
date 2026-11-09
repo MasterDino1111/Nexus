@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
+import { onlyPublished } from "@/lib/published";
+import { callFunction } from "@/lib/callFunction";
 import SongRow from "@/components/music/SongRow";
 import VideoCard from "@/components/video/VideoCard";
 import { ChevronLeft, Music2, Video, Heart, Users, Eye, ThumbsUp, Disc3, Plus, Check } from "lucide-react";
@@ -41,7 +43,7 @@ export default function ChannelPage() {
       } else {
         // Shorts live in the Shorts feed only, never in the video list
         const data = await base44.entities.Video.filter({ channel_name: decodedName, category: { $ne: "shorts" } }, "-views", 100);
-        setItems(data);
+        setItems(onlyPublished(data));
         const [mySubs, count] = await Promise.all([
           me
             ? base44.entities.ChannelSubscription.filter({ subscriber_id: me.id, channel_name: decodedName }, "-created_date", 1)
@@ -58,9 +60,13 @@ export default function ChannelPage() {
   const handleLikeSong = async (song) => {
     const isLiked = likedSongs[song.id];
     setLikedSongs(prev => ({ ...prev, [song.id]: !isLiked }));
-    const newLikes = (song.likes || 0) + (isLiked ? -1 : 1);
-    await base44.entities.Song.update(song.id, { likes: newLikes });
-    setItems(prev => prev.map(s => s.id === song.id ? { ...s, likes: newLikes } : s));
+    const { ok, data } = await callFunction("songStats", { songId: song.id, action: isLiked ? "unlike" : "like" })
+      .catch(() => ({ ok: false, data: {} }));
+    if (!ok) {
+      setLikedSongs(prev => ({ ...prev, [song.id]: !!isLiked }));
+      return;
+    }
+    setItems(prev => prev.map(s => s.id === song.id ? { ...s, likes: data.likes } : s));
   };
 
   // Owner stats

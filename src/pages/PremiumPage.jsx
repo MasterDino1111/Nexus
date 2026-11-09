@@ -131,7 +131,7 @@ export default function PremiumPage() {
   };
 
   const currentPlan = subscription?.plan || "free";
-  const isAdmin = user?.role === "admin" || user?.email === "dean.mueller@bluewin.ch";
+  const isAdmin = user?.role === "admin";
 
   if (loading) {
     return (

@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
+import { callFunction } from "@/lib/callFunction";
 import { Play, Pause, Crown, Heart, ListPlus, Share2, Download } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useMusicPlayer } from "../../contexts/MusicPlayerContext";
@@ -45,10 +46,10 @@ export default function SongRow({ song, index, songList }) {
     if (!me) return;
     const newLiked = !liked;
     setLiked(newLiked);
-    const newLikes = (song.likes || 0) + (newLiked ? 1 : -1);
     try {
+      const { ok } = await callFunction("songStats", { songId: song.id, action: newLiked ? "like" : "unlike" });
+      if (!ok) throw new Error("songStats failed");
       if (newLiked) {
-        await base44.entities.SongLike.create({ user_id: me.id, song_id: song.id });
         await notifyLike({
           ownerId: song.uploader_id,
           actor: me,
@@ -58,11 +59,7 @@ export default function SongRow({ song, index, songList }) {
           contentThumbnail: song.cover_url,
           link: "/music",
         }).catch(() => {});
-      } else {
-        const myLikes = await base44.entities.SongLike.filter({ user_id: me.id, song_id: song.id }, "-created_date", 1);
-        if (myLikes[0]) await base44.entities.SongLike.delete(myLikes[0].id);
       }
-      await base44.entities.Song.update(song.id, { likes: newLikes });
     } catch {
       setLiked(!newLiked);
     }

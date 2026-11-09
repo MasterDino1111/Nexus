@@ -41,7 +41,7 @@ export default function ShortPlayer({ video, isActive, me, liked, saved, onLiked
     if (!isActive || !me || counted.current) return;
     counted.current = true;
     if (video.uploader_id === me.id) return;
-    base44.entities.Video.update(video.id, { views: (video.views || 0) + 1 }).catch(() => {});
+    callFunction("trackView", { videoId: video.id }).catch(() => {});
     base44.entities.VideoHistory.create({
       user_id: me.id,
       video_id: video.id,

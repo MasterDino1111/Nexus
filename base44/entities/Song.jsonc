@@ -1,4 +1,3 @@
-
 {
   "name": "Song",
   "type": "object",
@@ -55,7 +54,31 @@
   "required": [
     "title",
     "artist"
-  ]
+  ],
+  "rls": {
+    "update": {
+      "$or": [
+        {
+          "uploader_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "uploader_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
 }
-
-

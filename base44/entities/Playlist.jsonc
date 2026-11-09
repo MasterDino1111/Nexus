@@ -1,4 +1,3 @@
-
 {
   "name": "Playlist",
   "type": "object",
@@ -29,7 +28,31 @@
   "required": [
     "name",
     "owner_id"
-  ]
+  ],
+  "rls": {
+    "update": {
+      "$or": [
+        {
+          "owner_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "owner_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
 }
-
-

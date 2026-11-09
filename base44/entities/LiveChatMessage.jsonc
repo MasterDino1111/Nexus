@@ -1,4 +1,3 @@
-
 {
   "name": "LiveChatMessage",
   "type": "object",
@@ -22,7 +21,31 @@
     "stream_id",
     "user_id",
     "content"
-  ]
+  ],
+  "rls": {
+    "update": {
+      "$or": [
+        {
+          "user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
 }
-
-

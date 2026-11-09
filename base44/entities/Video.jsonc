@@ -1,4 +1,3 @@
-
 {
   "name": "Video",
   "type": "object",
@@ -66,7 +65,31 @@
   "required": [
     "title",
     "video_url"
-  ]
+  ],
+  "rls": {
+    "update": {
+      "$or": [
+        {
+          "uploader_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "uploader_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
 }
-
-

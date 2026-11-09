@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { MessageCircle, Play, Music, User, Crown, Radio } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { fetchUnread, onUnreadChanged } from "@/lib/unread";
 
 function Badge({ count }) {
   if (!count || count === 0) return null;
@@ -21,32 +22,31 @@ export default function BottomNav() {
 
   useEffect(() => {
     loadBadges();
-    // Subscribe to new messages for live badge update
-    const unsub = base44.entities.Message.subscribe((event) => {
-      if (event.type === "create") {
-        setUnreadChats((c) => Math.min(c + 1, 1000));
-      }
-    });
-    return unsub;
+    // New messages and read-state changes: ask the server for the real count
+    let unsub = () => {};
+    try {
+      unsub = base44.entities.Message.subscribe((event) => {
+        if (event.type === "create") refreshUnread();
+      });
+    } catch {}
+    const offRead = onUnreadChanged(refreshUnread);
+    const timer = setInterval(refreshUnread, 60000);
+    return () => { unsub(); offRead(); clearInterval(timer); };
   }, []);
 
-  // Reset chat badge when visiting chats
   useEffect(() => {
-    if (location.pathname.startsWith("/chats") || location.pathname.startsWith("/chat")) {
-      setUnreadChats(0);
-    }
-    if (location.pathname === "/") {
-      setNewVideos(0);
-    }
+    if (location.pathname === "/") setNewVideos(0);
   }, [location.pathname]);
+
+  const refreshUnread = async () => {
+    const { total } = await fetchUnread();
+    setUnreadChats(total);
+  };
 
   const loadBadges = async () => {
     try {
-      const [messages, videos] = await Promise.all([
-      base44.entities.Message.filter({ read: false }, "-created_date", 100),
-      base44.entities.Video.list("-created_date", 5)]
-      );
-      setUnreadChats(messages.length);
+      refreshUnread();
+      const videos = await base44.entities.Video.list("-created_date", 5);
       // Show badge for videos uploaded in the last 24h
       const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
       setNewVideos(videos.filter((v) => v.created_date > oneDayAgo).length);

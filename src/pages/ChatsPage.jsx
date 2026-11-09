@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import ChatItem from "@/components/chat/ChatItem";
+import { fetchUnread, onUnreadChanged } from "@/lib/unread";
 import CreateGroupDialog from "@/components/chat/CreateGroupDialog";
 import { Search, PenSquare, MessageCircle, Mail, Users, Check, X } from "lucide-react";
 import { motion } from "framer-motion";
@@ -16,6 +17,7 @@ export default function ChatsPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [groupDialogOpen, setGroupDialogOpen] = useState(false);
   const [user, setUser] = useState(null);
+  const [unreadByChat, setUnreadByChat] = useState({});
 
   // New chat form
   const [contactName, setContactName] = useState("");
@@ -24,6 +26,18 @@ export default function ChatsPage() {
   const [chatAvatarPreview, setChatAvatarPreview] = useState(null);
 
   useEffect(() => { loadData(); }, []);
+
+  // Unread counts per chat: on load, on new messages and after reading
+  useEffect(() => {
+    const refresh = async () => setUnreadByChat((await fetchUnread()).byChat);
+    refresh();
+    let unsub = () => {};
+    try {
+      unsub = base44.entities.Message.subscribe((event) => { if (event.type === "create") refresh(); });
+    } catch {}
+    const off = onUnreadChanged(refresh);
+    return () => { unsub(); off(); };
+  }, []);
 
   // Realtime subscription for new chats
   useEffect(() => {
@@ -283,7 +297,7 @@ export default function ChatsPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.03 }}
               >
-                <ChatItem chat={chat} currentUserId={user?.id} />
+                <ChatItem chat={chat} currentUserId={user?.id} unread={unreadByChat[chat.id] || 0} />
               </motion.div>
             ))}
           </div>

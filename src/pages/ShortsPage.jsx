@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
+import { onlyPublished } from "@/lib/published";
 import ShortPlayer from "@/components/video/ShortPlayer";
 import { ChevronLeft, Zap, PlusCircle, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -42,7 +43,7 @@ export default function ShortsPage() {
       const user = await base44.auth.me();
       setMe(user);
       const page = await base44.entities.Video.filter({ category: "shorts" }, { sort: "-created_date", limit: 20 });
-      setShorts(page.items);
+      setShorts(onlyPublished(page.items));
       setCursor(page.next_cursor);
       setHasMore(page.has_more);
       if (user) {
@@ -65,7 +66,7 @@ export default function ShortsPage() {
     setLoadingMore(true);
     try {
       const page = await base44.entities.Video.filter({ category: "shorts" }, { sort: "-created_date", limit: 20, cursor });
-      setShorts(prev => [...prev, ...page.items]);
+      setShorts(prev => [...prev, ...onlyPublished(page.items)]);
       setCursor(page.next_cursor);
       setHasMore(page.has_more);
     } catch (e) {

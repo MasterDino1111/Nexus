@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import moment from "moment";
 import { Clock } from "lucide-react";
 
-export default function ChatItem({ chat, currentUserId }) {
+export default function ChatItem({ chat, currentUserId, unread = 0 }) {
   const isPending = chat.status === "pending" && chat.created_by === currentUserId;
 
   return (
@@ -28,7 +28,7 @@ export default function ChatItem({ chat, currentUserId }) {
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold truncate">{chat.chat_name || "Chat"}</h3>
+          <h3 className={`text-sm truncate ${unread ? "font-bold" : "font-semibold"}`}>{chat.chat_name || "Chat"}</h3>
           <div className="flex items-center gap-1.5 flex-shrink-0 ml-2">
             {isPending && (
               <span className="text-[9px] bg-amber-400/20 text-amber-400 px-1.5 py-0.5 rounded-full font-semibold">Ausstehend</span>
@@ -40,11 +40,18 @@ export default function ChatItem({ chat, currentUserId }) {
             )}
           </div>
         </div>
-        <p className="text-xs text-muted-foreground truncate mt-0.5">
-          {isPending
-            ? `Einladung an ${chat.contact_email}`
-            : (chat.last_message || "Noch keine Nachrichten")}
-        </p>
+        <div className="flex items-center justify-between gap-2 mt-0.5">
+          <p className={`text-xs truncate ${unread ? "text-foreground" : "text-muted-foreground"}`}>
+            {isPending
+              ? `Einladung an ${chat.contact_email}`
+              : (chat.last_message || "Noch keine Nachrichten")}
+          </p>
+          {unread > 0 && (
+            <span className="min-w-[18px] h-[18px] px-1 bg-primary text-primary-foreground text-[10px] rounded-full flex items-center justify-center font-bold flex-shrink-0">
+              {unread > 99 ? "99+" : unread}
+            </span>
+          )}
+        </div>
       </div>
     </Link>
   );

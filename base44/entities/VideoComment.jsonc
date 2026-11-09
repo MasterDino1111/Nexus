@@ -1,4 +1,3 @@
-
 {
   "name": "VideoComment",
   "type": "object",
@@ -28,7 +27,19 @@
     "video_id",
     "user_id",
     "content"
-  ]
+  ],
+  "rls": {
+    "delete": {
+      "$or": [
+        {
+          "user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
 }
-
-

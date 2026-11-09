@@ -1,4 +1,5 @@
 import { base44 } from "@/api/base44Client";
+import { onlyPublished } from "@/lib/published";
 
 const HISTORY_LIMIT = 40;
 const LIKE_LIMIT = 50;
@@ -79,7 +80,7 @@ export async function loadForYou(me) {
     base44.entities.VideoHistory.filter({ user_id: me.id }, "-created_date", HISTORY_LIMIT),
     base44.entities.VideoLike.filter({ user_id: me.id }, "-created_date", LIKE_LIMIT),
     // Shorts are recommended inside the Shorts feed, not in the video grid
-    base44.entities.Video.filter({ category: { $ne: "shorts" } }, { sort: "-created_date", limit: POOL_LIMIT }).then(page => page.items),
+    base44.entities.Video.filter({ category: { $ne: "shorts" } }, { sort: "-created_date", limit: POOL_LIMIT }).then(page => onlyPublished(page.items)),
   ]);
   return rankVideos({ pool, history, likes });
 }

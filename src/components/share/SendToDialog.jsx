@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
+import { callFunction } from "@/lib/callFunction";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
@@ -54,17 +55,8 @@ export default function SendToDialog({ open, onOpenChange, video }) {
     const link = `${window.location.origin}/video/${video.id}`;
     const text = `🎬 ${video.title}\n${link}`;
     try {
-      await base44.entities.Message.create({
-        chat_id: chat.id,
-        sender_id: user.id,
-        sender_name: user.full_name || "Ich",
-        content: text,
-        message_type: "video",
-      });
-      await base44.entities.Chat.update(chat.id, {
-        last_message: `🎬 ${video.title}`,
-        last_message_time: new Date().toISOString(),
-      });
+      const { ok } = await callFunction("sendMessage", { chatId: chat.id, content: text, messageType: "video" });
+      if (!ok) throw new Error("sendMessage failed");
       setSentTo(prev => [...prev, chat.id]);
       toast({ title: `An ${chat.chat_name || "Chat"} gesendet` });
     } catch (e) {

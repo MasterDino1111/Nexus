@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
+import { callFunction } from "@/lib/callFunction";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -62,21 +63,10 @@ export default function CreatorDashboard() {
     start.setDate(start.getDate() - (days - 1));
     const since = start.toISOString();
     try {
-      const videoIds = myVideos.map(v => v.id);
-      const [viewAgg, playAgg] = await Promise.all([
-        videoIds.length
-          ? base44.entities.VideoHistory.aggregate({
-              query: { video_id: { $in: videoIds }, created_date: { $gte: since } },
-              dateBucket: { field: "created_date", unit: "day" },
-              limit: 1000,
-            })
-          : Promise.resolve({ rows: [] }),
-        base44.entities.SongPlay.aggregate({
-          query: { uploader_id: me.id, created_date: { $gte: since } },
-          dateBucket: { field: "created_date", unit: "day" },
-          limit: 1000,
-        }),
-      ]);
+      const { ok, data } = await callFunction("creatorStats", { since });
+      if (!ok) throw new Error("creatorStats failed");
+      const viewAgg = { rows: data.views };
+      const playAgg = { rows: data.plays };
       const viewsByDay = toDayMap(viewAgg.rows);
       const playsByDay = toDayMap(playAgg.rows);
       const series = [];

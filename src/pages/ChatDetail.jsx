@@ -5,6 +5,9 @@ import { base44 } from "@/api/base44Client";
 import { ChevronLeft, Send, Phone, Video, Smile, X, MoreVertical, Trash2 } from "lucide-react";
 import EditChatDialog from "@/components/chat/EditChatDialog";
 import moment from "moment";
+import { callFunction } from "@/lib/callFunction";
+import { hasActivePremium } from "@/lib/usePremium";
+import { notifyUnreadChanged } from "@/lib/unread";
 
 const EMOJIS = ["😀","😂","😍","🥰","😎","😭","😅","🤔","👍","👏","❤️","🔥","😊","🎉","😢","😤","🙏","💯","✨","🤣","😇","🥺","😱","🤩","💪","🎶","🌟","💬","😴","🤝"];
 
@@ -33,6 +36,8 @@ export default function ChatDetail() {
   const [isPremium, setIsPremium] = useState(false);
   const [showPicker, setShowPicker] = useState(false); // "emoji" | "sticker" | false
   const [showEditChat, setShowEditChat] = useState(false);
+  const [error, setError] = useState("");
+  const userRef = useRef(null);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -49,27 +54,45 @@ export default function ChatDetail() {
           if (prev.find(m => m.id === event.data.id)) return prev;
           return [...prev, event.data];
         });
+        // The chat is open, so a message from somebody else is read right away
+        if (event.data.sender_id !== userRef.current?.id) markRead();
+      }
+      if (event.type === "delete" && event.data?.chat_id === id) {
+        setMessages(prev => prev.filter(m => m.id !== event.data.id));
       }
     });
     return unsubscribe;
   }, [id]);
 
+  // Marks everything in this chat as read on the server and refreshes the badges
+  const markRead = async () => {
+    const { ok } = await callFunction("markChatRead", { chatId: id }).catch(() => ({ ok: false }));
+    if (ok) notifyUnreadChanged();
+    return ok;
+  };
+
   const loadData = async () => {
     setLoading(true);
+    setError("");
     try {
-      const [chatData, userData, msgData] = await Promise.all([
+      const [chatData, userData] = await Promise.all([
         base44.entities.Chat.get(id),
         base44.auth.me(),
-        base44.entities.Message.filter({ chat_id: id }, "created_date", 100),
       ]);
       setChat(chatData);
       setUser(userData);
-      setMessages(msgData);
-      // Check premium
-      const subs = await base44.entities.Subscription.filter({ user_id: userData.id, status: "active" }, "-created_date", 1).catch(() => []);
-      const isAdmin = userData.role === "admin" || userData.email === "dean.mueller@bluewin.ch";
-      setIsPremium(isAdmin || subs.some(s => s.plan !== "free"));
-    } catch (e) { console.error(e); }
+      userRef.current = userData;
+      // Mark as read first: it also repairs the participant list that the message read rule uses
+      await markRead();
+      // Newest 100 messages (the oldest ones are not what you want to see), shown oldest to newest
+      const msgData = await base44.entities.Message.filter({ chat_id: id }, "-created_date", 100);
+      setMessages([...msgData].reverse());
+      const subs = await base44.entities.Subscription.filter({ user_id: userData.id, status: "active" }, "-created_date", 10).catch(() => []);
+      setIsPremium(userData.role === "admin" || hasActivePremium(subs));
+    } catch (e) {
+      console.error(e);
+      setError("Dieser Chat konnte nicht geladen werden.");
+    }
     setLoading(false);
   };
 
@@ -78,22 +101,25 @@ export default function ChatDetail() {
     if (!text || !user) return;
     setNewMessage("");
     setShowPicker(false);
+    setError("");
 
-    await base44.entities.Message.create({
-      chat_id: id,
-      sender_id: user.id,
-      sender_name: user.full_name || "Ich",
-      content: text,
-    });
-    await base44.entities.Chat.update(id, {
-      last_message: text,
-      last_message_time: new Date().toISOString(),
-    });
+    const { ok, data } = await callFunction("sendMessage", { chatId: id, content: text }).catch(() => ({ ok: false, data: {} }));
+    if (!ok) {
+      setNewMessage(text);
+      setError(data?.error || "Nachricht konnte nicht gesendet werden.");
+      return;
+    }
+    // Show it right away; the realtime event for the same id is ignored
+    setMessages(prev => (prev.find(m => m.id === data.message.id) ? prev : [...prev, data.message]));
   };
 
   const deleteMessage = async (msgId) => {
-    await base44.entities.Message.delete(msgId);
-    setMessages(prev => prev.filter(m => m.id !== msgId));
+    try {
+      await base44.entities.Message.delete(msgId);
+      setMessages(prev => prev.filter(m => m.id !== msgId));
+    } catch {
+      setError("Nachricht konnte nicht gelöscht werden.");
+    }
   };
 
   const addEmoji = (emoji) => {
@@ -227,11 +253,6 @@ export default function ChatDetail() {
                     </p>
                   </div>
                 )}
-                {!isMe && (
-                  <button onClick={() => deleteMessage(msg.id)} className="opacity-0 group-hover:opacity-100 transition-opacity p-1 text-muted-foreground hover:text-destructive">
-                    <Trash2 size={13} />
-                  </button>
-                )}
               </div>
             );
           })
@@ -293,6 +314,10 @@ export default function ChatDetail() {
         </div>
       )}
 
+      {error && (
+        <p className="mx-3 mb-1 text-xs text-destructive bg-destructive/10 rounded-lg px-3 py-2">{error}</p>
+      )}
+
       {/* Input */}
       <div className="sticky bottom-0 bg-card/95 backdrop-blur-xl border-t border-border p-3">
         <div className="flex items-center gap-2">
@@ -316,6 +341,7 @@ export default function ChatDetail() {
             placeholder="Nachricht schreiben..."
             value={newMessage}
             onChange={e => setNewMessage(e.target.value)}
+            maxLength={2000}
             onKeyDown={e => e.key === "Enter" && sendMessage()}
             className="flex-1 px-4 py-2.5 bg-secondary rounded-full text-sm outline-none focus:ring-1 focus:ring-primary transition-all"
           />

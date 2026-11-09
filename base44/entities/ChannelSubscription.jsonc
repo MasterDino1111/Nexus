@@ -1,4 +1,3 @@
-
 {
   "name": "ChannelSubscription",
   "type": "object",
@@ -16,7 +15,31 @@
   "required": [
     "subscriber_id",
     "channel_user_id"
-  ]
+  ],
+  "rls": {
+    "update": {
+      "$or": [
+        {
+          "subscriber_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "subscriber_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
 }
-
-

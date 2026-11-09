@@ -442,7 +442,7 @@ export default function ProfilePage() {
             <ChevronRight size={16} className="text-muted-foreground" />
           </Link>
 
-          {(user?.email === "dean.mueller@bluewin.ch" || user?.role === "admin") && (
+          {user?.role === "admin" && (
             <Link
               to="/admin"
               className="flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-primary/10 to-primary/5 rounded-xl border border-primary/20 hover:border-primary/40 transition-colors mb-2"
