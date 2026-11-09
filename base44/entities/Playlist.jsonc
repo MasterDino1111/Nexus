@@ -1,0 +1,35 @@
+
+{
+  "name": "Playlist",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "cover_url": {
+      "type": "string"
+    },
+    "song_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "owner_id": {
+      "type": "string"
+    },
+    "is_public": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "name",
+    "owner_id"
+  ]
+}
+
+

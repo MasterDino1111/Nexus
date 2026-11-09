@@ -1,0 +1,25 @@
+
+{
+  "name": "SongPlay",
+  "type": "object",
+  "properties": {
+    "song_id": {
+      "type": "string",
+      "description": "Reference to Song"
+    },
+    "uploader_id": {
+      "type": "string",
+      "description": "User ID of the song's uploader"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "User ID of the listener"
+    }
+  },
+  "required": [
+    "song_id",
+    "uploader_id"
+  ]
+}
+
+

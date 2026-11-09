@@ -1,0 +1,40 @@
+
+{
+  "name": "LiveSignal",
+  "type": "object",
+  "properties": {
+    "stream_id": {
+      "type": "string",
+      "description": "Reference to LiveStream"
+    },
+    "from_id": {
+      "type": "string",
+      "description": "User ID of the viewer this signal belongs to"
+    },
+    "to_id": {
+      "type": "string",
+      "description": "User ID of the stream host"
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "join",
+        "offer",
+        "answer"
+      ],
+      "default": "join"
+    },
+    "payload": {
+      "type": "string",
+      "description": "WebRTC offer or answer"
+    }
+  },
+  "required": [
+    "stream_id",
+    "from_id",
+    "to_id",
+    "kind"
+  ]
+}
+
+

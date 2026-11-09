@@ -1,0 +1,30 @@
+
+{
+  "name": "VideoHistory",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "User ID of the viewer"
+    },
+    "video_id": {
+      "type": "string",
+      "description": "Reference to Video"
+    },
+    "video_title": {
+      "type": "string"
+    },
+    "video_thumbnail": {
+      "type": "string"
+    },
+    "video_channel": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id",
+    "video_id"
+  ]
+}
+
+

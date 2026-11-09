@@ -1,0 +1,21 @@
+
+{
+  "name": "SongLike",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "User ID who liked"
+    },
+    "song_id": {
+      "type": "string",
+      "description": "Reference to Song"
+    }
+  },
+  "required": [
+    "user_id",
+    "song_id"
+  ]
+}
+
+

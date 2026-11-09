@@ -1,0 +1,51 @@
+
+{
+  "name": "Chat",
+  "type": "object",
+  "properties": {
+    "participants": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "User IDs of chat participants"
+    },
+    "last_message": {
+      "type": "string"
+    },
+    "last_message_time": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "chat_name": {
+      "type": "string"
+    },
+    "chat_avatar": {
+      "type": "string"
+    },
+    "contact_email": {
+      "type": "string"
+    },
+    "contact_phone": {
+      "type": "string"
+    },
+    "created_by": {
+      "type": "string",
+      "description": "User ID of creator"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "accepted",
+        "rejected"
+      ],
+      "default": "accepted"
+    }
+  },
+  "required": [
+    "participants"
+  ]
+}
+
+

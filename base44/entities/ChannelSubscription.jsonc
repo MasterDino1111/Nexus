@@ -1,0 +1,22 @@
+
+{
+  "name": "ChannelSubscription",
+  "type": "object",
+  "properties": {
+    "subscriber_id": {
+      "type": "string"
+    },
+    "channel_user_id": {
+      "type": "string"
+    },
+    "channel_name": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "subscriber_id",
+    "channel_user_id"
+  ]
+}
+
+

@@ -1,0 +1,51 @@
+
+{
+  "name": "LiveStream",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "host_id": {
+      "type": "string",
+      "description": "User ID of the creator streaming"
+    },
+    "host_name": {
+      "type": "string"
+    },
+    "host_avatar": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "live",
+        "ended"
+      ],
+      "default": "live"
+    },
+    "viewers": {
+      "type": "number",
+      "default": 0
+    },
+    "donation_goal": {
+      "type": "number",
+      "default": 0,
+      "description": "Donation goal in EUR for this live stream, 0 = no goal"
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "ended_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "title",
+    "host_id"
+  ]
+}
+
+

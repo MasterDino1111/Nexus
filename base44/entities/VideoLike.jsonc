@@ -1,0 +1,21 @@
+
+{
+  "name": "VideoLike",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "User ID who liked"
+    },
+    "video_id": {
+      "type": "string",
+      "description": "Reference to Video"
+    }
+  },
+  "required": [
+    "user_id",
+    "video_id"
+  ]
+}
+
+

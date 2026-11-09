@@ -1,0 +1,20 @@
+{
+  "name": "Report",
+  "type": "object",
+  "properties": {
+    "target_type": { "type": "string", "enum": ["video", "short", "song", "comment", "user", "live"], "default": "video" },
+    "target_id": { "type": "string" },
+    "target_title": { "type": "string" },
+    "reason": { "type": "string", "enum": ["spam", "hate", "violence", "sexual", "copyright", "other"], "default": "other" },
+    "details": { "type": "string" },
+    "reporter_id": { "type": "string" },
+    "reporter_name": { "type": "string" },
+    "status": { "type": "string", "enum": ["open", "reviewing", "resolved"], "default": "open" }
+  },
+  "required": ["target_type", "target_id", "reason", "reporter_id"],
+  "rls": {
+    "read": { "user_condition": { "role": "admin" } },
+    "update": { "user_condition": { "role": "admin" } },
+    "delete": { "user_condition": { "role": "admin" } }
+  }
+}

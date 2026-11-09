@@ -1,0 +1,28 @@
+
+{
+  "name": "LiveChatMessage",
+  "type": "object",
+  "properties": {
+    "stream_id": {
+      "type": "string",
+      "description": "Reference to LiveStream"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "User ID of the author"
+    },
+    "user_name": {
+      "type": "string"
+    },
+    "content": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "stream_id",
+    "user_id",
+    "content"
+  ]
+}
+
+

@@ -1,0 +1,72 @@
+
+{
+  "name": "Video",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "thumbnail_url": {
+      "type": "string"
+    },
+    "video_url": {
+      "type": "string"
+    },
+    "channel_name": {
+      "type": "string"
+    },
+    "channel_avatar": {
+      "type": "string"
+    },
+    "views": {
+      "type": "number",
+      "default": 0
+    },
+    "likes": {
+      "type": "number",
+      "default": 0
+    },
+    "dislikes": {
+      "type": "number",
+      "default": 0
+    },
+    "duration": {
+      "type": "number",
+      "description": "Duration in seconds"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "music",
+        "gaming",
+        "education",
+        "entertainment",
+        "sports",
+        "news",
+        "tech",
+        "shorts"
+      ],
+      "default": "entertainment"
+    },
+    "is_premium": {
+      "type": "boolean",
+      "default": false
+    },
+    "uploader_id": {
+      "type": "string"
+    },
+    "scheduled_publish_time": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "title",
+    "video_url"
+  ]
+}
+
+

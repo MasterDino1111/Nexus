@@ -1,0 +1,16 @@
+{
+  "name": "NEXUS",
+  "short_name": "NEXUS",
+  "description": "Videos, Shorts, Musik und Live-Streams. Unterstütze deine Creator direkt.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0b0b12",
+  "theme_color": "#0b0b12",
+  "lang": "de",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}

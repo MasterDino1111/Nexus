@@ -1,0 +1,61 @@
+
+{
+  "name": "Song",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "artist": {
+      "type": "string"
+    },
+    "album": {
+      "type": "string"
+    },
+    "cover_url": {
+      "type": "string"
+    },
+    "audio_url": {
+      "type": "string"
+    },
+    "duration_seconds": {
+      "type": "number"
+    },
+    "genre": {
+      "type": "string",
+      "enum": [
+        "pop",
+        "rock",
+        "hiphop",
+        "electronic",
+        "jazz",
+        "classical",
+        "rnb",
+        "latin",
+        "country"
+      ],
+      "default": "pop"
+    },
+    "plays": {
+      "type": "number",
+      "default": 0
+    },
+    "likes": {
+      "type": "number",
+      "default": 0
+    },
+    "is_premium": {
+      "type": "boolean",
+      "default": false
+    },
+    "uploader_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "title",
+    "artist"
+  ]
+}
+
+
