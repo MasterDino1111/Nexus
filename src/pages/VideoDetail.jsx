@@ -81,7 +81,8 @@ export default function VideoDetail() {
       if (userData) {
         try {
           const myLikes = await base44.entities.VideoLike.filter({ user_id: userData.id, video_id: id }, "-created_date", 1);
-          setLiked(myLikes.length > 0);
+          setLiked(myLikes.length > 0 && myLikes[0].type !== "dislike");
+          setDisliked(myLikes[0]?.type === "dislike");
         } catch {}
       }
       // Check if saved for later
@@ -97,56 +98,34 @@ export default function VideoDetail() {
     setLoading(false);
   };
 
-  const handleLike = async () => {
+  // Likes and dislikes are saved on the server, which also recalculates the counters
+  const setReaction = async (reaction) => {
     if (!video || !user) return;
-    const newLiked = !liked;
-    setLiked(newLiked);
-    if (disliked) setDisliked(false);
-    try {
-      if (newLiked) {
-        await base44.entities.VideoLike.create({ user_id: user.id, video_id: id });
-        await notifyLike({
-          ownerId: video.uploader_id,
-          actor: user,
-          kind: video.category === "shorts" ? "short" : "video",
-          contentId: id,
-          contentTitle: video.title,
-          contentThumbnail: video.thumbnail_url,
-          link: `/video/${id}`,
-        }).catch(() => {});
-      } else {
-        const myLikes = await base44.entities.VideoLike.filter({ user_id: user.id, video_id: id }, "-created_date", 1);
-        if (myLikes[0]) await base44.entities.VideoLike.delete(myLikes[0].id);
-      }
-      await base44.entities.Video.update(id, {
-        likes: (video.likes || 0) + (newLiked ? 1 : -1),
-        dislikes: disliked ? (video.dislikes || 0) - 1 : video.dislikes,
-      });
-      setVideo(v => ({
-        ...v,
-        likes: (v.likes || 0) + (newLiked ? 1 : -1),
-        dislikes: disliked ? (v.dislikes || 0) - 1 : v.dislikes,
-      }));
-    } catch (e) {
-      setLiked(!newLiked);
+    const before = { liked, disliked };
+    setLiked(reaction === "like");
+    setDisliked(reaction === "dislike");
+    const { ok, data } = await callFunction("reactVideo", { videoId: id, reaction }).catch(() => ({ ok: false, data: {} }));
+    if (!ok) {
+      setLiked(before.liked);
+      setDisliked(before.disliked);
+      return;
+    }
+    setVideo(v => ({ ...v, likes: data.likes, dislikes: data.dislikes }));
+    if (reaction === "like" && data.previous !== "like") {
+      notifyLike({
+        ownerId: video.uploader_id,
+        actor: user,
+        kind: video.category === "shorts" ? "short" : "video",
+        contentId: id,
+        contentTitle: video.title,
+        contentThumbnail: video.thumbnail_url,
+        link: `/video/${id}`,
+      }).catch(() => {});
     }
   };
 
-  const handleDislike = async () => {
-    if (!video) return;
-    const newDisliked = !disliked;
-    setDisliked(newDisliked);
-    if (liked) setLiked(false);
-    await base44.entities.Video.update(id, {
-      dislikes: (video.dislikes || 0) + (newDisliked ? 1 : -1),
-      likes: liked ? (video.likes || 0) - 1 : video.likes,
-    });
-    setVideo(v => ({
-      ...v,
-      dislikes: (v.dislikes || 0) + (newDisliked ? 1 : -1),
-      likes: liked ? (v.likes || 0) - 1 : v.likes,
-    }));
-  };
+  const handleLike = () => setReaction(liked ? "none" : "like");
+  const handleDislike = () => setReaction(disliked ? "none" : "dislike");
 
   const toggleSave = async () => {
     if (!user || !video) return;

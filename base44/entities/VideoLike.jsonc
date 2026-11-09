@@ -1,4 +1,3 @@
-
 {
   "name": "VideoLike",
   "type": "object",
@@ -10,6 +9,15 @@
     "video_id": {
       "type": "string",
       "description": "Reference to Video"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "like",
+        "dislike"
+      ],
+      "default": "like",
+      "description": "Reaction type. Older records without type count as likes."
     }
   },
   "required": [
@@ -17,5 +25,3 @@
     "video_id"
   ]
 }
-
-

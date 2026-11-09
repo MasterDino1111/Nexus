@@ -2,6 +2,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from '@/App.jsx'
+import ErrorBoundary from '@/components/ErrorBoundary.jsx'
 import '@/index.css'
 
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
@@ -9,7 +10,9 @@ if ('serviceWorker' in navigator && import.meta.env.PROD) {
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <App />
+  <ErrorBoundary>
+    <App />
+  </ErrorBoundary>
 )
 
 

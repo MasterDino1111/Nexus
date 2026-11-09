@@ -23,7 +23,7 @@ export default function LiveWatch() {
   const answeredRef = useRef(false);
 
   useEffect(() => {
-    let unsubSignals, unsubStream;
+    let unsubSignals, unsubStream, pollTimer;
     const start = async () => {
       const me = await base44.auth.me().catch(() => null);
       const record = await base44.entities.LiveStream.get(id).catch(() => null);
@@ -58,9 +58,23 @@ export default function LiveWatch() {
         kind: "join",
       });
       signalIdRef.current = signal.id;
+
+      // The host may have answered before the id above was stored, and live
+      // events can be missed. So check right away and then every few seconds.
+      const checkOffer = async () => {
+        if (answeredRef.current || !signalIdRef.current) return;
+        const current = await base44.entities.LiveSignal.get(signalIdRef.current).catch(() => null);
+        if (current?.kind === "offer" && current.payload && !answeredRef.current) {
+          answeredRef.current = true;
+          await answer(current);
+        }
+      };
+      await checkOffer();
+      pollTimer = setInterval(checkOffer, 3000);
     };
     start();
     return () => {
+      clearInterval(pollTimer);
       unsubSignals?.();
       unsubStream?.();
       if (signalIdRef.current) base44.entities.LiveSignal.delete(signalIdRef.current).catch(() => {});
@@ -112,7 +126,8 @@ export default function LiveWatch() {
 
         {status === "error" && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-white/80 bg-black/70 px-8 text-center">
-            <p className="text-sm">Die Verbindung konnte nicht aufgebaut werden. Bitte lade die Seite neu.</p>
+            <p className="text-sm">Die Verbindung konnte nicht aufgebaut werden. Das kann an einer strengen Firewall oder am Mobilnetz liegen.</p>
+            <button onClick={() => window.location.reload()} className="px-5 py-2 rounded-full bg-white text-black text-xs font-bold">Erneut versuchen</button>
           </div>
         )}
 

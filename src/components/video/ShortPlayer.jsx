@@ -2,6 +2,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
+import { callFunction } from "@/lib/callFunction";
 import { Heart, MessageCircle, Share2, Send, Bookmark, Eye, Volume2, VolumeX, Crown } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import SendToDialog from "@/components/share/SendToDialog";
@@ -54,27 +55,23 @@ export default function ShortPlayer({ video, isActive, me, liked, saved, onLiked
     if (!me) return;
     const next = !liked;
     onLikedChange(video.id, next);
-    setLikeCount(c => c + (next ? 1 : -1));
-    try {
-      if (next) {
-        await base44.entities.VideoLike.create({ user_id: me.id, video_id: video.id });
-        await notifyLike({
-          ownerId: video.uploader_id,
-          actor: me,
-          kind: "short",
-          contentId: video.id,
-          contentTitle: video.title,
-          contentThumbnail: video.thumbnail_url,
-          link: `/video/${video.id}`,
-        }).catch(() => {});
-      } else {
-        const mine = await base44.entities.VideoLike.filter({ user_id: me.id, video_id: video.id }, "-created_date", 1);
-        if (mine[0]) await base44.entities.VideoLike.delete(mine[0].id);
-      }
-      await base44.entities.Video.update(video.id, { likes: (video.likes || 0) + (next ? 1 : -1) });
-    } catch {
+    const { ok, data } = await callFunction("reactVideo", { videoId: video.id, reaction: next ? "like" : "none" })
+      .catch(() => ({ ok: false, data: {} }));
+    if (!ok) {
       onLikedChange(video.id, !next);
-      setLikeCount(c => c + (next ? -1 : 1));
+      return;
+    }
+    setLikeCount(data.likes);
+    if (next && data.previous !== "like") {
+      notifyLike({
+        ownerId: video.uploader_id,
+        actor: me,
+        kind: "short",
+        contentId: video.id,
+        contentTitle: video.title,
+        contentThumbnail: video.thumbnail_url,
+        link: `/video/${video.id}`,
+      }).catch(() => {});
     }
   };
 
